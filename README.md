@@ -1,4 +1,4 @@
-# whareora-arduino
+# whareora-gateway
 
 
 New Zealand's housing is cold, damp, mouldy. Lack of heating and insulation means that homes are ill-equipped to deal with winter temperatures. These poor conditions are linked to increased illnesses and infection. Our homes are making us sick. 
