@@ -176,9 +176,9 @@ void loop()
 {
   gw.process();
 
-//  checkButtonTriggeredInclusion();
-//  checkInclusionFinished();
-  
+  //  checkButtonTriggeredInclusion();
+  //  checkInclusionFinished();
+
   if (commandComplete) {
     // A command wass issued from serial interface
     // We will now try to send it to the actuator
