@@ -85,19 +85,24 @@ char inputString[MAX_RECEIVE_LENGTH] = "";    // A string to hold incoming comma
 int inputPos = 0;
 boolean commandComplete = false;  // whether the string is complete
 
+String logfilename = "logfile.txt"; // Filename in the root of the SD card
+File logfile;
+
 void parseAndSend(char *commandBuffer);
 
 void output(const char *fmt, ... ) {
-   va_list args;
-   va_start (args, fmt );
-   vsnprintf_P(serialBuffer, MAX_SEND_LENGTH, fmt, args);
-   va_end (args);
-   Serial.print(serialBuffer);
+  va_list args;
+  va_start (args, fmt);
+  vsnprintf_P(serialBuffer, MAX_SEND_LENGTH, fmt, args);
+  va_end (args);
+  writeSDArray(serialBuffer, sizeof(serialBuffer));
 }
 
 void setup()
 {
   gw.begin(incomingMessage, 0, true, 0);
+
+  setupSD();
 
   setupGateway(INCLUSION_MODE_PIN, INCLUSION_MODE_TIME, output);
 
@@ -108,8 +113,67 @@ void setup()
   serial(PSTR("0;0;%d;0;%d;Gateway startup complete.\n"),  C_INTERNAL, I_GATEWAY_READY);
 }
 
-void loop()  
-{ 
+void _clearSD() {
+  Serial.println("Emptied SD Card");
+  SD.remove(logfilename);
+}
+
+void _openSD() {
+  logfile = SD.open(logfilename, FILE_WRITE);
+}
+
+void _closeSD() {
+  logfile.close();
+}
+
+void _printSD() {
+  // re-open the file for reading:
+  File logfileread = SD.open(logfilename);
+  if (logfileread) {
+    Serial.print(logfilename + ":");
+    // read from the file until there's nothing else in it:
+    while (logfileread.available()) {
+      Serial.write(logfileread.read());
+    }
+    // close the file:
+    logfileread.close();
+  } else {
+    // if the file didn't open, print an error:
+    Serial.println("error opening " + logfilename);
+  }
+  Serial.println("EOF");
+}
+
+void setupSD() {
+  Serial.print("Initializing SD card...");
+  if (!SD.begin(SD_CARD_PIN)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+}
+
+void writeSDString(String message) {
+  _openSD();
+  if (logfile) {
+    logfile.print(message);
+    Serial.println("SD String Logged");
+    _closeSD();
+  }
+}
+
+void writeSDArray(char* buff, int len) {
+  _openSD();
+  Serial.println("writeSDArray");
+  if (logfile) {
+    logfile.write(buff, len);
+    logfile.print("\n");
+    Serial.println("SD Array Logged");
+    _closeSD();
+  }
+}
+
+void loop()
+{
   gw.process();
 
 //  checkButtonTriggeredInclusion();
